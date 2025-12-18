@@ -85,12 +85,22 @@ export const getChat = async (c: Context) => {
     const chatId = c.req.param("chatId");
     const user = c.get("user");
 
+    // 1. Verify chat ownership
+    const chat = await db.chat.findFirst({
+      where: {
+        id: chatId,
+        userId: user.id,
+      },
+    });
+
+    if (!chat) {
+      return c.json({ error: "Chat not found" }, 404);
+    }
+
+    // 2. Fetch messages
     const messages = await db.message.findMany({
       where: {
         chatId,
-        chat: {
-          userId: user.id,
-        },
       },
       orderBy: { createdAt: "asc" },
       select: {

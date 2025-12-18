@@ -20,6 +20,7 @@
     "@langchain/langgraph": "^1.0.4",
     "@langchain/tavily": "^1.0.1",
     "@prisma/client": "^6.19.1",
+    "google-auth-library": "^10.5.0",
     "hono": "^4.11.0",
     "jsonwebtoken": "^9.0.3"
   }
