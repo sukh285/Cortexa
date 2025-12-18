@@ -2,7 +2,7 @@
   "name": "custom-ai-agent",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/index.ts"
+    "dev": "bun --watch src/app.ts"
   },
   "private": true,
   "devDependencies": {
