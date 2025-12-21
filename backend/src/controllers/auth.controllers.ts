@@ -5,39 +5,6 @@ import { sign } from "../lib/jwt";
 import { authCookieOptions } from "../lib/cookie";
 import { verifyGoogleToken } from "../lib/google";
 
-export const login = async (c: Context) => {
-  try {
-    const body = await c.req.json();
-    const { userId } = body;
-
-    if (!userId) return c.json({ error: "userId is required" }, 400);
-
-    const user = await db.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) return c.json({ error: "User not found" }, 404);
-
-    const token = sign({ userId: user.id });
-
-    setCookie(c, "jwt", token, authCookieOptions);
-
-    return c.json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        name: user.username,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return c.json({ error: "Internal server error" }, 500);
-  }
-};
-
 export const googleLogin = async (c: Context) => {
   try {
     // 1. Read id token from body
@@ -91,3 +58,35 @@ export const googleLogin = async (c: Context) => {
     return c.json({ error: "Authentication failed" }, 401);
   }
 };
+
+export const me = async (c: Context) => {
+  const user = c.get("user");
+
+  return c.json({
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage,
+    },
+  });
+};
+
+export const logout = async (c: Context) => {
+  try {
+    // Delete the jwt cookie
+    setCookie(c, "jwt", "", {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      path: "/",
+      maxAge: 0
+    })
+
+
+    return c.json({message: "User logout successfully"});
+  } catch (error) {
+    console.error("Logout error:", error);
+    return c.json({message: "Error logging out"}, 500);
+  }
+}
