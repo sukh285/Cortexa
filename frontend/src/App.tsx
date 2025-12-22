@@ -1,9 +1,40 @@
-const App = () => {
-  return (
-    <div>
-      <h1 className="bg-red-500">Hello</h1>
-    </div>
-  )
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useAuthStore } from "./store/auth.store";
+import { useEffect, type ReactNode } from "react";
+import Landing from "./pages/Landing";
+import Chat from "./pages/Chat";
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { user, isLoading } = useAuthStore();
+
+  if (isLoading) return null;
+  if (!user) return <Navigate to="/" replace />;
+
+  return <>{children}</>;
 }
 
-export default App
+const App = () => {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+export default App;
