@@ -3,20 +3,29 @@ import { db } from "../lib/db";
 import { setCookie } from "hono/cookie";
 import { sign } from "../lib/jwt";
 import { authCookieOptions } from "../lib/cookie";
-import { verifyGoogleToken } from "../lib/google";
+import { googleClient, verifyGoogleToken } from "../lib/google";
 
 export const googleLogin = async (c: Context) => {
   try {
-    // 1. Read id token from body
+    // 1. Read auth code from body
     const body = await c.req.json();
-    const { idToken } = body;
+    const { code } = body;
+    if (!code) {
+      return c.json({ error: "Authorization code is required" }, 400);
+    }
 
-    if (!idToken) {
-      return c.json({ error: "idToken is required" }, 400);
+    const { tokens } = await googleClient.getToken(code);
+
+    if (!tokens.id_token) {
+      return c.json({ error: "No id_token returned by Google" }, 401);
     }
 
     // 2. Verify Google Id Token
-    const googleUser = await verifyGoogleToken(idToken);
+    const googleUser = await verifyGoogleToken(tokens.id_token);
+
+    if (!googleUser.email) {
+      return c.json({ error: "Google account has no email" }, 401);
+    }
 
     // 3. Find user
     let user = await db.user.findUnique({
@@ -46,7 +55,7 @@ export const googleLogin = async (c: Context) => {
 
     // 7. Response
     console.log("Google Login success:", user);
-    
+
     return c.json({
       message: "Login Successful",
       user: {
@@ -64,12 +73,15 @@ export const googleLogin = async (c: Context) => {
 export const me = async (c: Context) => {
   const user = c.get("user");
 
-  if(!user){
-    return c.json({
-      message: "User not found"
-    }, 404);
+  if (!user) {
+    return c.json(
+      {
+        message: "User not found",
+      },
+      404
+    );
   }
-  
+
   return c.json({
     user: {
       id: user.id,
@@ -88,13 +100,12 @@ export const logout = async (c: Context) => {
       sameSite: "Lax",
       secure: false,
       path: "/",
-      maxAge: 0
-    })
+      maxAge: 0,
+    });
 
-
-    return c.json({message: "User logout successfully"});
+    return c.json({ message: "User logout successfully" });
   } catch (error) {
     console.error("Logout error:", error);
-    return c.json({message: "Error logging out"}, 500);
+    return c.json({ message: "Error logging out" }, 500);
   }
-}
+};

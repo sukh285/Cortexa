@@ -1,6 +1,10 @@
 import { OAuth2Client } from "google-auth-library";
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+export const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.FRONTEND_URL // redirect URI
+);
 
 export type GoogleUserPayload = {
   providerId: string;
@@ -12,7 +16,7 @@ export type GoogleUserPayload = {
 export const verifyGoogleToken = async (
   idToken: string
 ): Promise<GoogleUserPayload> => {
-  const ticket = await client.verifyIdToken({
+  const ticket = await googleClient.verifyIdToken({
     idToken,
     audience: process.env.GOOGLE_CLIENT_ID,
   });
