@@ -45,6 +45,8 @@ export const googleLogin = async (c: Context) => {
     setCookie(c, "jwt", token, authCookieOptions);
 
     // 7. Response
+    console.log("Google Login success:", user);
+    
     return c.json({
       message: "Login Successful",
       user: {
@@ -62,6 +64,12 @@ export const googleLogin = async (c: Context) => {
 export const me = async (c: Context) => {
   const user = c.get("user");
 
+  if(!user){
+    return c.json({
+      message: "User not found"
+    }, 404);
+  }
+  
   return c.json({
     user: {
       id: user.id,
