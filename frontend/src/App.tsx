@@ -5,9 +5,13 @@ import Landing from "./pages/Landing";
 import Chat from "./pages/Chat";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { user, isLoading } = useAuthStore();
+  const { user, isCheckingAuth } = useAuthStore();
 
-  if (isLoading) return null;
+  if (isCheckingAuth){
+    return <div>
+      Loading...
+    </div>
+  };
   if (!user) return <Navigate to="/" replace />;
 
   return <>{children}</>;

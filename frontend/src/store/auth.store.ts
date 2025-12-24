@@ -10,33 +10,58 @@ type User = {
 
 type AuthState = {
   user: User | null;
-  isLoading: boolean;
+
+  isCheckingAuth: boolean;
+  isAuthActionLoading: boolean;
+
   checkAuth: () => Promise<void>;
+  login: (code: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  isLoading: true,
+  isCheckingAuth: true,
+  isAuthActionLoading: false,
 
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/me");
       set({ user: res.data.user });
+    } catch {
+      set({ user: null });
+    } finally {
+      set({ isCheckingAuth: false });
+    }
+  },
+
+  login: async (code: string) => {
+    set({ isAuthActionLoading: true });
+    try {
+      await axiosInstance.post(
+        "/auth/google",
+        { code },
+        { withCredentials: true }
+      );
+      const res = await axiosInstance.get("/auth/me");
+      set({ user: res.data.user });
     } catch (error) {
       set({ user: null });
-      console.error("Error checking auth:", error);
+      console.error("Login failed", error);
     } finally {
-      set({ isLoading: false });
+      set({ isAuthActionLoading: false });
     }
   },
 
   logout: async () => {
+    set({ isAuthActionLoading: true });
     try {
-        await axiosInstance.post("/auth/logout");
-        set({ user: null });
+      await axiosInstance.post("/auth/logout");
+      set({ user: null });
     } catch (error) {
-        console.error("Error logging out:", error);
+      console.error("Logout failed", error);
+    } finally {
+      set({ isAuthActionLoading: false });
     }
   },
 }));
