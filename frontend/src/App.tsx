@@ -1,17 +1,19 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { useAuthStore } from "./store/auth.store";
 import { useEffect, type ReactNode } from "react";
+
+import { useAuthStore } from "./store/auth.store";
+
 import Landing from "./pages/Landing";
-import Chat from "./pages/Chat";
+import ChatPage from "./pages/ChatPage";
+import { PageLoader } from "./components/PageLoader";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isCheckingAuth } = useAuthStore();
 
-  if (isCheckingAuth){
-    return <div>
-      Loading...
-    </div>
-  };
+  if (isCheckingAuth) {
+    return <PageLoader />;
+  }
+
   if (!user) return <Navigate to="/" replace />;
 
   return <>{children}</>;
@@ -32,7 +34,7 @@ const App = () => {
           path="/chat"
           element={
             <ProtectedRoute>
-              <Chat />
+              <ChatPage />
             </ProtectedRoute>
           }
         />
