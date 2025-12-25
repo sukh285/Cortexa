@@ -6,6 +6,7 @@ import { useAuthStore } from "./store/auth.store";
 import Landing from "./pages/Landing";
 import ChatPage from "./pages/ChatPage";
 import { PageLoader } from "./components/PageLoader";
+import ThemeSync from "./components/ThemeSync";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isCheckingAuth } = useAuthStore();
@@ -27,19 +28,22 @@ const App = () => {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <ChatPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <ThemeSync />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 };
 

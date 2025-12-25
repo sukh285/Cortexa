@@ -9,10 +9,9 @@ interface ThemeState {
 }
 
 export const useThemeStore = create<ThemeState>((set) => ({
-  theme: "light",
+  theme: (localStorage.getItem("theme") as Theme) || "light",
 
   setTheme: (theme) => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("theme", theme);
     set({ theme });
   },
@@ -20,7 +19,6 @@ export const useThemeStore = create<ThemeState>((set) => ({
   toggleTheme: () =>
     set((state) => {
       const next = state.theme === "light" ? "dark" : "light";
-      document.documentElement.classList.toggle("dark", next === "dark");
       localStorage.setItem("theme", next);
       return { theme: next };
     }),
