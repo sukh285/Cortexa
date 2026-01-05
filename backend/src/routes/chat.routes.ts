@@ -12,6 +12,7 @@ const chatRoutes = new Hono();
 chatRoutes.use("*", authMiddleware);
 
 chatRoutes.get("/", getAllChats);
+chatRoutes.post("/", sendMsg);
 chatRoutes.post("/:chatId", sendMsg);
 chatRoutes.get("/:chatId", getChat);
 chatRoutes.delete("/:chatId", deleteChat);

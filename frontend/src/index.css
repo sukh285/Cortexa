@@ -117,6 +117,8 @@
 
   --surface: oklch(0.18 0 0);
   --surface-muted: oklch(0.22 0 0);
+
+  color-scheme: dark;
 }
 
 @layer base {
@@ -140,4 +142,28 @@
     transition: background-color 200ms ease, border-color 200ms ease,
       color 200ms ease;
   }
+}
+
+/* ===== Custom Scrollbar ===== */
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(var(--muted-foreground) / 0.5) transparent;
+}
+
+/* Chrome / Edge / Safari */
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: oklch(var(--muted-foreground) / 0.4);
+  border-radius: 9999px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(var(--muted-foreground) / 0.6);
 }

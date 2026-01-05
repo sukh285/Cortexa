@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -8,21 +11,43 @@ import {
 import { LucideSunMedium, LucideMoonStar } from "lucide-react";
 
 import { Button } from "@/components/Button";
+import { Loader } from "./Loader";
+
 import { useAuthStore } from "@/store/auth.store";
 import { useThemeStore } from "@/store/theme.store";
 import { useChatStore } from "@/store/chat.store";
-import { useEffect } from "react";
-import { Loader } from "./Loader";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+
   const { user, logout, isAuthActionLoading } = useAuthStore();
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const { chats, fetchChats, activeChatId, setActiveChat, isLoading } =
-    useChatStore();
+
+  const {
+    chats,
+    fetchChats,
+    fetchMessages,
+    activeChatId,
+    setActiveChat,
+    reset,
+    isFetchingChats,
+  } = useChatStore();
 
   useEffect(() => {
     fetchChats();
   }, []);
+
+  const handleNewChat = () => {
+    reset();
+    navigate("/chat");
+  };
+
+  const handleSelectChat = async (chatId: string) => {
+    setActiveChat(chatId);
+    await fetchMessages(chatId);
+    navigate(`/chat/${chatId}`);
+  };
+
   return (
     <aside className="w-64 border-r bg-muted flex flex-col">
       {/* App title */}
@@ -30,35 +55,39 @@ const Sidebar = () => {
 
       {/* New chat */}
       <div className="px-4 pb-4">
-        <Button className="w-full">+ New Chat</Button>
+        <Button className="w-full" onClick={handleNewChat}>
+          + New Chat
+        </Button>
       </div>
 
-      {/* Chat list placeholder */}
+      {/* Chat list */}
       <div className="flex-1 px-2 space-y-1 overflow-y-auto">
-        {isLoading && (
+        {isFetchingChats && (
           <div className="flex justify-center py-4">
             <Loader />
           </div>
         )}
 
-        {!isLoading && chats.length === 0 && (
-          <div className="px-2 text-sm text-muted-foreground">No chats yet</div>
+        {!isFetchingChats && chats.length === 0 && (
+          <div className="px-2 text-sm text-muted-foreground">
+            No chats yet
+          </div>
         )}
 
         {chats.map((chat) => (
           <button
             key={chat.id}
-            onClick={() => setActiveChat(chat.id)}
-            className={`w-full text-left px-3 py-2 rounded-md text-sm
-             hover:bg-accent
-             ${
-               activeChatId === chat.id
-                 ? "bg-accent font-medium"
-                 : "text-muted-foreground"
-             }
+            onClick={() => handleSelectChat(chat.id)}
+            className={`
+              w-full text-left px-3 py-2 rounded-md text-sm transition
+              ${
+                activeChatId === chat.id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent"
+              }
             `}
           >
-            Chat
+            Chat {chat.id.slice(0, 6)}
           </button>
         ))}
       </div>
@@ -68,12 +97,14 @@ const Sidebar = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="flex items-center gap-2 cursor-pointer">
-              <Avatar key={user?.profileImage} className="h-10 w-10 ring">
+              <Avatar className="h-10 w-10 ring">
                 <AvatarImage
                   src={user?.profileImage || undefined}
                   alt={user?.username || "User"}
                 />
-                <AvatarFallback>{user?.username?.[0] ?? "U"}</AvatarFallback>
+                <AvatarFallback>
+                  {user?.username?.[0] ?? "U"}
+                </AvatarFallback>
               </Avatar>
 
               <span className="text-sm font-medium truncate max-w-[120px]">
@@ -87,9 +118,9 @@ const Sidebar = () => {
               <Button
                 onClick={logout}
                 disabled={isAuthActionLoading}
-                className="w-full justify-start bg-red-400"
                 variant="ghost"
                 size="sm"
+                className="w-full justify-start text-red-500"
               >
                 Logout
               </Button>
@@ -104,22 +135,20 @@ const Sidebar = () => {
           onClick={toggleTheme}
           className="relative"
         >
-          {/* Sun */}
           <LucideSunMedium
             className="
-      h-5 w-5 transition-all
-      rotate-0 scale-100
-      dark:-rotate-90 dark:scale-0
-    "
+              h-5 w-5 transition-all
+              rotate-0 scale-100
+              dark:-rotate-90 dark:scale-0
+            "
           />
 
-          {/* Moon */}
           <LucideMoonStar
             className="
-      absolute h-5 w-5 transition-all
-      rotate-90 scale-0
-      dark:rotate-0 dark:scale-100
-    "
+              absolute h-5 w-5 transition-all
+              rotate-90 scale-0
+              dark:rotate-0 dark:scale-100
+            "
           />
         </Button>
       </div>

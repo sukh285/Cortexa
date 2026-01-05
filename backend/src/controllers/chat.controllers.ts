@@ -29,31 +29,34 @@ export const getAllChats = async (c: Context) => {
 
 export const sendMsg = async (c: Context) => {
   try {
-    const chatId = c.req.param("chatId");
     const user = c.get("user");
+    let chatId = c.req.param("chatId");
 
-    //check existing chat
-    const existingChat = await db.chat.findUnique({
-      where: { id: chatId },
-    });
-
-    if (!existingChat) {
-      await db.chat.create({
-        data: {
-          id: chatId,
-          userId: user.id,
-        },
+    // 1. Create or validate chat
+    if (chatId) {
+      const chat = await db.chat.findFirst({
+        where: { id: chatId, userId: user.id },
       });
+
+      if (!chat) {
+        return c.json({ error: "Chat not found" }, 404);
+      }
+    } else {
+      const chat = await db.chat.create({
+        data: { userId: user.id },
+      });
+      chatId = chat.id;
     }
 
+    // 2. Read & validate message
     const body = await c.req.json();
-    const message = body.message;
+    const message = body.message?.trim();
 
     if (!message) {
       return c.json({ error: "Message required" }, 400);
     }
 
-    //create message in message table
+    // 3. Store user message
     await db.message.create({
       data: {
         chatId,
@@ -62,9 +65,10 @@ export const sendMsg = async (c: Context) => {
       },
     });
 
+    // 4. Run agent
     const reply = await runAgent(message, chatId);
 
-    //create reply in reply table
+    // 5. Store assistant reply
     await db.message.create({
       data: {
         chatId,
@@ -73,12 +77,14 @@ export const sendMsg = async (c: Context) => {
       },
     });
 
+    // 6. Respond
     return c.json({ chatId, reply });
   } catch (error) {
     console.error("sendMsg error:", error);
     return c.json({ error: "Internal Server Error" }, 500);
   }
 };
+
 
 export const getChat = async (c: Context) => {
   try {
