@@ -2,6 +2,9 @@ import { useChatStore } from "@/store/chat.store";
 import { useEffect, useRef } from "react";
 import { Loader } from "@/components/Loader";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 const ChatMessages = () => {
   const { messages, activeChatId, isFetchingMessages } = useChatStore();
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -60,9 +63,15 @@ const ChatMessages = () => {
               `}
             >
               {msg.isLoading ? (
-                <span className="italic opacity-70">Thinking…</span>
-              ) : (
+                <Loader label="Thinking" />
+              ) : isUser ? (
                 msg.content
+              ) : (
+                <div className="markdown">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
               )}
             </div>
           </div>

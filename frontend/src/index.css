@@ -167,3 +167,54 @@
 .scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: oklch(var(--muted-foreground) / 0.6);
 }
+
+/* Markdown */
+.markdown p {
+  margin: 0.5rem 0;
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 0.5rem 0 0.5rem 1.25rem;
+}
+
+.markdown li {
+  margin: 0.25rem 0;
+}
+
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+}
+
+.markdown th {
+  background-color: var(--muted);
+  font-weight: 600;
+}
+
+.markdown hr {
+  margin: 1rem 0;
+  border-color: var(--border);
+}
+
+.markdown pre {
+  background: var(--muted);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.markdown code {
+  background: var(--muted);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
